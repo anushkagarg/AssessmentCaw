@@ -24,6 +24,7 @@ import java.util.Map;
 public class ValidateDataOfTableTest {
     public static WebDriver driver;
     public static String homeUrl = "https://testpages.herokuapp.com/styled/tag/dynamic-table.html";
+    public static String jsonFilePath = "C:\\Users\\Anushka Garg\\Desktop\\Assignment_2\\src\\main\\resources\\data.json";
 
     @BeforeTest
     public void launchHomePage() {
@@ -49,11 +50,9 @@ public class ValidateDataOfTableTest {
         Page_Home pageHome = new Page_Home(driver);
         try {
             pageHome.button_table.click();
-            // Read JSON data from file
-            String jsonFilePath = "C:\\Users\\Anushka Garg\\Desktop\\Assignment_2\\src\\main\\resources\\data.json";
             String jsonData = readJsonFile(jsonFilePath);
 
-            //input data in textbox
+            //input json data in textbox
             pageHome.input_data.clear();
             pageHome.input_data.sendKeys(jsonData);
             pageHome.button_refreshTable.click();
@@ -68,13 +67,14 @@ public class ValidateDataOfTableTest {
         try {
 
             // Read JSON data from file
-            String jsonFilePath = "C:\\Users\\Anushka Garg\\Desktop\\Assignment_2\\src\\main\\resources\\data.json";
             String jsonData = readJsonFile(jsonFilePath);
 
             // Parse JSON and extract relevant information
             List<Map<String,String>> uiTableData = getUITableData(driver);
             List<Map<String,String>> jsonTableData = parseJsonAndGetTableData(jsonData);
             Thread.sleep(5000);
+
+            //comparing ui and json data
             boolean resultMatch = assertTableData(uiTableData, jsonTableData);
             Assert.assertTrue(resultMatch,"All entries matched");
 
@@ -89,6 +89,7 @@ public class ValidateDataOfTableTest {
         driver.quit();
     }
 
+    //method for reading json file
     private static String readJsonFile(String filePath) {
         try {
             return new String(Files.readAllBytes(Paths.get(filePath)));
@@ -101,13 +102,12 @@ public class ValidateDataOfTableTest {
         Page_Home pageHome = new Page_Home(driver);
         List<Map<String, String>> uiData = new ArrayList<>();
 
-        // List<WebElement> rows = driver.findElements(By.xpath("//table[@id='dynamictable']/tr"));
         try{
+            //getting data from ui, iterating and saving in arraylist
             for (int i = 1; i < pageHome.table_data.size(); i++) {
                 WebElement row = pageHome.table_data.get(i);
                 List<WebElement> columns = row.findElements(By.tagName("td"));
 
-                // Assuming columns order in the UI table matches the order in JSON
                 String name = columns.get(0).getText();
                 String age = columns.get(1).getText();
                 String gender = columns.get(2).getText();
@@ -118,6 +118,7 @@ public class ValidateDataOfTableTest {
 
                 uiData.add(dataMap);
             }
+
             System.out.println("UI Data: "+uiData);
 
         }catch (Exception e){
@@ -133,7 +134,7 @@ public class ValidateDataOfTableTest {
 
         try {
             JSONArray jsonArray = new JSONArray(jsonData);
-
+            //reading data from json file, iterating and saving in arraylist
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
 
@@ -155,7 +156,7 @@ public class ValidateDataOfTableTest {
 
 
     private static boolean assertTableData(List<Map<String,String>> uiTableData, List<Map<String,String>> jsonTableData) {
-        // Compare the data from the UI table with the data from the JSON
+        // Compare the data from the UI table with the data from the JSON which we saved in arraylist
         boolean dataMatched = false;
         if (uiTableData.equals(jsonTableData)) {
             dataMatched = true;
